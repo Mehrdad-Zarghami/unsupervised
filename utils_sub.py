@@ -40,7 +40,7 @@ def sub_closest_center(sample, centers, weight_matrix, beta=2):
 
 
 
-def u_calculation(data, centers, weights, beta = 2):
+def u_calculation(data, centers, weights, beta):
    """ Calculate U based on Z and W and our dataset
    """
    n_spl = data.shape[0] # umber of samples
@@ -144,12 +144,14 @@ def sub_dj(X, U, Z):
         inx_in_cluster = cluster_dict[l]
         for j in range(n_features):
             # Distance for feature "j" in cluster "l"
-            D[l, j] =np.sum(np.square(X[inx_in_cluster][j]-Z[l][j]))
+            D[l, j] =np.sum(np.square(X[inx_in_cluster][:,j]-Z[l][j]))
+            # D[l, j] =np.sum(np.square(X[inx_in_cluster][j]-Z[l][j]))
+            
 
     return D
 
 ## --> modified 
-def sub_weight_update(X, U, Z, weights, beta=2):
+def sub_weight_update(X, U, Z, weights, beta):
     
     n_clusters = weights.shape[0]
     n_features = weights.shape[1]
@@ -171,3 +173,4 @@ def sub_weight_update(X, U, Z, weights, beta=2):
             weights_upd[l, j] = 1 / Dlj_Dlt
 
     return weights_upd
+

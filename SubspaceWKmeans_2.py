@@ -37,83 +37,45 @@ def sub_w_k_means(X, k, beta=2):
 
     # Generate random weights that sum up to 1
     weights = np.random.dirichlet(np.ones(n_features), size=n_clusters)
-    # weights = np.random.dirichlet(np.ones(n_features), size=1).squeeze()
+
+    # weights = np.array([1/4, 1/4, 1/4, 1/4])
     history['W'].append(weights)
 
-    #Calculating  U
-    U = u_calculation(X, Z, weights)
-    history['U'].append(U)
+    initial_U = np.zeros((X.shape[0], Z.shape[0]))
+    history['U'].append(initial_U)
 
-    #Calculating cost function
-    c_t = cost_function(U, Z, weights, X, beta)
-    history['cost'].append(c_t)
-
-    Z_t = update_Z(U, Z, X) # new update of Z
-    history['Z'].append(Z_t)
-
-    # Update cost
-    c_t = cost_function(U, Z_t, weights, X, beta) 
-    history['cost'].append(c_t)
-
-    # weight update
-    weights_t = sub_weight_update(X, U, Z, weights, beta=2)
-    history['W'].append(weights_t)
-
-    c_t = cost_function(U, Z, weights_t, X, beta = 2)
-    history['cost'].append(c_t)
-
+    # put every thing together go for a while loop
+    Z = history['Z'][-1] # the last update of Z
+    weights = history['W'][-1] # the last update of W
 
 
     # put every thing together go for a while loop
-    cost_difference = []
+
 
     while True:
-        cost_difference = np.abs(history['cost'][-1] - history['cost'][-2])
-        if  cost_difference > 0.0001:
-
-            # P1 --> update U
-            Z = history['Z'][-1] # the last update of Z
-            weights = history['W'][-1] # the last update of W
-            U = u_calculation(X, Z, weights)
-            history['U'].append(U)
-            U = history['U'][-1]
-            # update cost
-            c_t = cost_function(U, Z, weights, X, beta)
-            history['cost'].append(c_t)
-        else:
+        # P1 --> update U
+        U = u_calculation(X, Z, weights, beta)
+        history['U'].append(U)
+        # update cost
+        c = cost_function(U, Z, weights, X, beta)
+        history['cost'].append(c)
+        if (history['U'][-1] == history['U'][-2]).all():
             break
 
-
-        #P2 --> update Z
-        cost_difference = np.abs(history['cost'][-1] - history['cost'][-2])
-        if  cost_difference > 0.0001:
-            U = history['U'][-1] # the last update of U
-            Z = history['Z'][-1] # the last update of Z
-            weights = history['W'][-1] # the last update of weights
-
-            Z_t = update_Z(U, Z, X) # new update of Z
-            history['Z'].append(Z_t)
-            # Update cost
-            c_t = cost_function(U, Z_t, weights, X, beta) 
-            history['cost'].append(c_t)
-        else:
-            break
-
-
-        # P3 --> update  weights
-        cost_difference = np.abs(history['cost'][-1] - history['cost'][-2])
-        if  cost_difference > 0.0001:
-            U = history['U'][-1] # the lsat update of U
-            Z = history['Z'][-1] # the lsat update of Z
-            weights_t = sub_weight_update(X, U, Z, weights, beta)
-            history['W'].append(weights_t)
-            #update cost
-            c_t = cost_function(U, Z, weights_t, X, beta)
-            history['cost'].append(c_t)
-        else:
-            break
-
+        #P2 --> update Z     
+        Z = update_Z(U, Z, X) # new update of Z
+        history['Z'].append(Z)
+        # Update cost
+        c = cost_function(U, Z, weights, X, beta)
+        history['cost'].append(c)
     
+        # P3 --> update  weights
+        weights = sub_weight_update(X, U, Z, weights, beta)
+        history['W'].append(weights)
+        #update cost
+        c = cost_function(U, Z, weights, X, beta)
+        history['cost'].append(c)
+
     return history
 
 
@@ -121,8 +83,6 @@ if __name__ == "__main__":
 
     from sklearn.datasets import load_iris
     from sklearn.metrics import adjusted_rand_score
-    
-    from SubspaceWKmeans import sub_w_k_means
     from utils_sub import clusters_vec
     # Load the Iris dataset
     iris = load_iris()

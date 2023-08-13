@@ -19,7 +19,7 @@ def weighted_distance(s1, s2, weight_vec, beta):
     return weighted_distance
 
 
-def closest_center(sample, centers, weight_vector, beta=2):
+def closest_center(sample, centers, weight_vector, beta):
     """it takes a sample and compare its distance to centers of clusters and return the cluster with closest center.
 
     Args:
@@ -38,7 +38,7 @@ def closest_center(sample, centers, weight_vector, beta=2):
     return assigned_cluster
 
 
-def u_calculation(data, centers, weights, beta = 2):
+def u_calculation(data, centers, weights, beta ):
    """ Calculate U based on Z and W and our dataset
    """
    n_spl = data.shape[0] # umber of samples
@@ -51,7 +51,7 @@ def u_calculation(data, centers, weights, beta = 2):
 
 
 def clusters_vec(U):
-    # a vector of size (n_samples, ) which each element shows the cluster that each samples is assigned to
+    # a vector of size (n_samples, ) which each element shows the cluster that corresponding samples is assigned to
     n_samples = U.shape[0]
     c_vec = np.zeros(n_samples)
     for m, u in enumerate(U):
@@ -59,7 +59,7 @@ def clusters_vec(U):
     c_vec = c_vec.astype(int)
     return c_vec
 
-def cost_function(U, Z, W, X, beta = 2):
+def cost_function(U, Z, W, X, beta ):
     """Calculate the cost function
 
     Args:
@@ -79,8 +79,6 @@ def cost_function(U, Z, W, X, beta = 2):
         P += w_d
         P =  P.item() # to convert it to a single scaler
     return(P)
-
-
 
 
 
@@ -106,8 +104,6 @@ def update_Z(U, Z, X):
     
     return new_Z
 
-
-
 def dj(X, U, Z):
     # Iteration over all features to calculate Dj for each feature
     
@@ -121,21 +117,20 @@ def dj(X, U, Z):
         for l in range(n_clusters):
             inx_in_cluster = cluster_dict[l]
             # Distance for feature "j" in cluster "l"
-            d_j_l =np.sum(np.square(X[inx_in_cluster][j]-Z[l][j]))
+            d_j_l =np.sum(np.square(X[inx_in_cluster][:,j]-Z[l][j])) 
+            ###################bug was here
+            #d_j_l =np.sum(np.square(X[inx_in_cluster][j]-Z[l][j]))
             d_j += d_j_l
 
         D.append(d_j)
     return D
 
-def weight_update(X, U, Z, weights, beta=2):
 
+def weight_update(X, U, Z, weights, beta):
     # D calculation:
     D = dj(X, U, Z)
-
-    
     # weights_update
     weights_upd = np.zeros_like(weights)
-
 
     # wherever D is zero, the corresponding weight is zero
     ind_D_zero = np.where(D == 0 )[0] # indexes of zero Dj
@@ -185,7 +180,7 @@ def sub_dj(X, U, Z):
 
     return D
 
-def sub_weight_update(X, U, Z, weights, beta=2):
+def sub_weight_update(X, U, Z, weights, beta):
     
     n_clusters = weights.shape[0]
     n_features = weights.shape[1]
